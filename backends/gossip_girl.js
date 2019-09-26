@@ -39,13 +39,17 @@ GossipGirl.prototype.process = function(time_stamp, metrics) {
       stats = stats_map[type]
       for (key in stats.data) {
         if (self.ignorable.indexOf(key) >= 0) continue
-        packet = self.format(key, stats.data[key], stats.suffix)
+        //timers is array
+        var values = [].concat(stats.data[key]);
+        for (var v = 0; v < values.length; v++) {
+            packet = self.format(key, values[v], stats.suffix)
 
-        if (self.statsd_config.dumpMessages) {
-          util.log ("Gossiping about " + stats.name + ": " + packet)
+            if (self.statsd_config.dumpMessages) {
+                util.log ("Gossiping about " + stats.name + ": " + packet)
+            }
+
+            self.gossip(packet, hosts[i].host, hosts[i].port)
         }
-
-        self.gossip(packet, hosts[i].host, hosts[i].port)
       } 
     }
   }
