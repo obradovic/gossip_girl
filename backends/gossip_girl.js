@@ -47,9 +47,9 @@ GossipGirl.prototype.process = function (time_stamp, metrics) {
               }
               //timers is array
               var values = [].concat(stats.data[key]);
-              // for timers split array into 10 chunks and calculate mean value for each chunk (perfmance reasons)
+              // for timers split array into 100 chunks and calculate mean value for each chunk (perfmance reasons)
               if (type === "timers") {
-                var chunkSize = Math.round(values.length / 10);
+                var chunkSize = Math.ceil(values.length / 100) ;
                 var rest = values;
                 var result = [];
                 do {
