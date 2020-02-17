@@ -28,7 +28,6 @@ GossipGirl.prototype.format = function (key, value, suffix) {
 GossipGirl.prototype.process = function (time_stamp, metrics) {
   var self = this;
   var hosts = self.config;
-  var stats, packet;
 
   var stats_map = {
     counters: {data: metrics.counters, suffix: "c", name: "counter"},
@@ -40,7 +39,7 @@ GossipGirl.prototype.process = function (time_stamp, metrics) {
     function (host) {
       Object.keys(stats_map).forEach(
         function (type) {
-          stats = stats_map[type];
+          var stats = stats_map[type];
           Object.keys(stats.data).forEach(
             function (key) {
               setImmediate(
