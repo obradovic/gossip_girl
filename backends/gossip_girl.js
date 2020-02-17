@@ -51,7 +51,7 @@ GossipGirl.prototype.process = function (time_stamp, metrics) {
               if (type === "timers") {
                 var chunkSize = Math.ceil(values.length / chunk) ;
                 var rest = values;
-                var result = [];
+                var result = [Math.max(...values), Math.min(...values)];
                 do {
                   var part = rest.splice(-chunkSize);
                   result.push(mean(part));
