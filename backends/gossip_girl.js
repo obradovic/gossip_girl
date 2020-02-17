@@ -43,26 +43,35 @@ GossipGirl.prototype.process = function (time_stamp, metrics) {
           stats = stats_map[type];
           Object.keys(stats.data).forEach(
             function (key) {
-              if (self.ignorable.indexOf(key) >= 0) {
-                return;
-              }
-              //timers is array
-              var values = [].concat(stats.data[key]);
-              values.forEach(
-                function (value) {
-                  packet = self.format(key, value, stats.suffix);
-
-                  if (self.statsd_config.dumpMessages) {
-                    util.log("Gossiping about " + stats.name + ": " + packet);
-                  }
-
-                  self.gossip(packet, host.host, host.port);
+              setImmediate(
+                function() {
+                  self.processMetric(key, stats, host);
                 }
-              );
+              )
             }
           );
         }
       );
+    }
+  );
+};
+
+GossipGirl.prototype.processMetric = function (key, stats, host) {
+  var self = this;
+  if (self.ignorable.indexOf(key) >= 0) {
+    return;
+  }
+  //timers is array
+  var values = [].concat(stats.data[key]);
+  values.forEach(
+    function (value) {
+      var packet = self.format(key, value, stats.suffix);
+
+      if (self.statsd_config.dumpMessages) {
+        util.log("Gossiping about " + stats.name + ": " + packet);
+      }
+
+      self.gossip(packet, host.host, host.port);
     }
   );
 };
