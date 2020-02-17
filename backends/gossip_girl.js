@@ -44,7 +44,7 @@ GossipGirl.prototype.process = function (time_stamp, metrics) {
           Object.keys(stats.data).forEach(
             function (key) {
               if (self.ignorable.indexOf(key) >= 0) {
-                continue;
+                return;
               }
               //timers is array
               var values = [].concat(stats.data[key]);
