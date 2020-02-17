@@ -8,7 +8,7 @@
   "keywords"    : "statsd",
   "author"      : "Zo Obradovic <ping@obradovic.com>",
   "main"        : "./backends/gossip_girl.js",
-  "version"     : "1.0.8",
+  "version"     : "1.0.9",
   "engines"     : {
                   "node"  : ">=0.6"
                   },
