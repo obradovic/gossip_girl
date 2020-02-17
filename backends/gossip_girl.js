@@ -28,7 +28,7 @@ GossipGirl.prototype.format = function (key, value, suffix) {
 GossipGirl.prototype.process = function (time_stamp, metrics) {
   var self = this;
   var hosts = self.config;
-
+  var chunk = self.statsd_config.chunk || 100;
   var stats_map = {
     counters: {data: metrics.counters, suffix: "c", name: "counter"},
     gauges: {data: metrics.gauges, suffix: "g", name: "gauge"},
@@ -49,7 +49,7 @@ GossipGirl.prototype.process = function (time_stamp, metrics) {
               var values = [].concat(stats.data[key]);
               // for timers split array into 100 chunks and calculate mean value for each chunk (perfmance reasons)
               if (type === "timers") {
-                var chunkSize = Math.ceil(values.length / 100) ;
+                var chunkSize = Math.ceil(values.length / chunk) ;
                 var rest = values;
                 var result = [];
                 do {
