@@ -46,7 +46,7 @@ GossipGirl.prototype.process = function (time_stamp, metrics) {
                 return;
               }
               //timers is array
-              var values = [].concat(stats.data[key]);
+              var values = [].concat(stats.data[key]).slice(-50); // take only last 50 elements for timer (for perfomance)
               values.forEach(
                 function (value) {
                   var packet = self.format(key, value, stats.suffix);
