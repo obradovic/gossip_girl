@@ -46,7 +46,11 @@ GossipGirl.prototype.process = function (time_stamp, metrics) {
                 return;
               }
               //timers is array
-              var values = [].concat(stats.data[key]).slice(-50); // take only last 50 elements for timer (for perfomance)
+              var values = [].concat(stats.data[key]);
+              // for timers make mean value (perfmance reasons)
+              if (type === "timers") {
+                values = [mean(values)]
+              }
               values.forEach(
                 function (value) {
                   var packet = self.format(key, value, stats.suffix);
@@ -66,6 +70,9 @@ GossipGirl.prototype.process = function (time_stamp, metrics) {
   );
 };
 
+function mean(numbers) {
+  return numbers.reduce((acc, val) => acc + val, 0) / numbers.length;
+}
 
 exports.init = function (startupTime, config, events) {
   var instance = new GossipGirl(startupTime, config, events);
