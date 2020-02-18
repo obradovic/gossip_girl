@@ -56,8 +56,10 @@ GossipGirl.prototype.process = function (time_stamp, metrics) {
                 do {
                   var part = rest.splice(-chunkSize);
                   result.push(mean(part));
-                  result.push(Math.max(...part));
-                  result.push(Math.min(...part));
+                  if (part.length > 10) {
+                    result.push(Math.max(...part));
+                    result.push(Math.min(...part));
+                  }
                 } while(rest.length > 0);
 
                 values = result;
