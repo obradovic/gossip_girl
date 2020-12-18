@@ -46,6 +46,10 @@ GossipGirl.prototype.process = function (time_stamp, metrics) {
               if (self.ignorable.indexOf(key) >= 0) {
                 return;
               }
+              if (type === "counters" && !stats.data[key]) {
+                delete stats.data[key];
+                return;
+              }
               //timers is array
               var values = [].concat(stats.data[key]);
               // for timers split array into 100 chunks and calculate mean value for each chunk (perfmance reasons)
