@@ -54,6 +54,7 @@ GossipGirl.prototype.process = function (time_stamp, metrics) {
               var values = [].concat(stats.data[key]);
               // for timers split array into 100 chunks and calculate mean value for each chunk (perfmance reasons)
               if (type === "timers" && values.length > chunkThreshold) {
+                util.log(`Gossip timing ${key} exceeded chunk threshold ${values.length} > ${chunkThreshold}, truncate`);
                 var chunkSize = Math.ceil(values.length / chunk) ;
                 var rest = values;
                 var result = [Math.max(...values), Math.min(...values)];
