@@ -36,51 +36,68 @@ GossipGirl.prototype.process = async function (time_stamp, metrics) {
     gauges: {data: metrics.gauges, suffix: "g", name: "gauge"},
     timers: {data: metrics.timers, suffix: "ms", name: "timer"}
   };
+  
+  const items = [];
 
-  for (let host of hosts) {
-    for (let type in stats_map) {
-      var stats = stats_map[type];
-      for (let key in stats.data) {
-        if (self.ignorable.indexOf(key) >= 0) {
-          return;
-        }
-        if (type === "counters" && !stats.data[key]) {
-          delete stats.data[key];
-          return;
-        }
-        //timers is array
-        var values = [].concat(stats.data[key]);
-        // for timers split array into 100 chunks and calculate mean value for each chunk (perfmance reasons)
-        if (type === "timers" && values.length > chunkThreshold) {
-          // util.log(`Gossip timing ${key} exceeded chunk threshold ${values.length} > ${chunkThreshold}, truncate`);
-          var chunkSize = Math.ceil(values.length / chunk);
-          var rest = values;
-          var result = [Math.max(...values), Math.min(...values)];
-          do {
-            var part = rest.splice(-chunkSize);
-            result.push(mean(part));
-            if (part.length > 10) {
-              result.push(Math.max(...part));
-              result.push(Math.min(...part));
+  hosts.forEach(
+    function (host) {
+      Object.keys(stats_map).forEach(
+        function (type) {
+          var stats = stats_map[type];
+          Object.keys(stats.data).forEach(
+            function (key) {
+              if (self.ignorable.indexOf(key) >= 0) {
+                return;
+              }
+              if (type === "counters" && !stats.data[key]) {
+                delete stats.data[key];
+                return;
+              }
+              //timers is array
+              var values = [].concat(stats.data[key]);
+              // for timers split array into 100 chunks and calculate mean value for each chunk (perfmance reasons)
+              if (type === "timers" && values.length > chunkThreshold) {
+                // util.log(`Gossip timing ${key} exceeded chunk threshold ${values.length} > ${chunkThreshold}, truncate`);
+                var chunkSize = Math.ceil(values.length / chunk) ;
+                var rest = values;
+                var result = [Math.max(...values), Math.min(...values)];
+                do {
+                  var part = rest.splice(-chunkSize);
+                  result.push(mean(part));
+                  if (part.length > 10) {
+                    result.push(Math.max(...part));
+                    result.push(Math.min(...part));
+                  }
+                } while(rest.length > 0);
+
+                values = result;
+              }
+
+              values.forEach(
+                function (value) {
+                  items.push({
+                    name: stats.name,
+                    packet: self.format(key, value, stats.suffix),
+                    host: host.host,
+                    port: host.port
+                  });
+                }
+              );
             }
-          } while (rest.length > 0);
-
-          values = result;
+          );
         }
+      );
+    }
+  );
 
-        for (let value of values) {
-          var packet = self.format(key, value, stats.suffix);
+  for (let item of items) {
+    if (self.statsd_config.dumpMessages) {
+      util.log("Gossiping about " + item.name + ": " + item.packet);
+    }
 
-          if (self.statsd_config.dumpMessages) {
-            util.log("Gossiping about " + stats.name + ": " + packet);
-          }
-
-          self.gossip(packet, host.host, host.port);
-          if (delaySend > 0) {
-            await wait(delaySend);
-          }
-        }
-      }
+    self.gossip(item.packet, item.host, item.port);
+    if (delaySend > 0) {
+      await wait(delaySend);
     }
   }
 };
