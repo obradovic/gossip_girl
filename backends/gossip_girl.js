@@ -25,11 +25,12 @@ GossipGirl.prototype.format = function (key, value, suffix) {
   return new Buffer("'" + key + "':" + value + "|" + suffix);
 };
 
-GossipGirl.prototype.process = function (time_stamp, metrics) {
+GossipGirl.prototype.process = async function (time_stamp, metrics) {
   var self = this;
   var hosts = self.config;
   var chunk = self.statsd_config.chunk || 30;
   var chunkThreshold = self.statsd_config.chunkThreshold || 100;
+  var delaySend = self.statsd_config.delaySend || 0;
   var stats_map = {
     counters: {data: metrics.counters, suffix: "c", name: "counter"},
     gauges: {data: metrics.gauges, suffix: "g", name: "gauge"},
@@ -69,17 +70,19 @@ GossipGirl.prototype.process = function (time_stamp, metrics) {
 
                 values = result;
               }
-              values.forEach(
-                function (value) {
-                  var packet = self.format(key, value, stats.suffix);
+              
+              for (let value of values) {
+                 var packet = self.format(key, value, stats.suffix);
 
-                  if (self.statsd_config.dumpMessages) {
-                    util.log("Gossiping about " + stats.name + ": " + packet);
-                  }
+                 if (self.statsd_config.dumpMessages) {
+                   util.log("Gossiping about " + stats.name + ": " + packet);
+                 }
 
-                  self.gossip(packet, host.host, host.port);
-                }
-              );
+                 self.gossip(packet, host.host, host.port);
+                 if (delaySend > 0) {
+                   await wait(delaySend);
+                 }
+              }
             }
           );
         }
@@ -90,6 +93,12 @@ GossipGirl.prototype.process = function (time_stamp, metrics) {
 
 function mean(numbers) {
   return numbers.reduce((acc, val) => acc + val, 0) / numbers.length;
+}
+
+function wait(ms) { 
+  return new Promise(
+    (resolve) => setTimeout(() => resolve(), ms)
+  );
 }
 
 exports.init = function (startupTime, config, events) {
